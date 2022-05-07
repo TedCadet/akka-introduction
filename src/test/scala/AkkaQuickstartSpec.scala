@@ -1,5 +1,5 @@
-import actors.Greeter
-import actors.Greeter.{Greet, Greeted}
+import greeteractors.Greeter
+import greeteractors.Greeter.{Greet, Greeted}
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import org.scalatest.wordspec.AnyWordSpecLike
 

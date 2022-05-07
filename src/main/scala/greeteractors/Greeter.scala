@@ -1,4 +1,4 @@
-package actors
+package greeteractors
 
 
 import akka.actor.typed.{ActorRef, Behavior}

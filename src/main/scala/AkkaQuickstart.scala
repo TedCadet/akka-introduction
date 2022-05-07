@@ -1,5 +1,5 @@
-import actors.GreeterMain
-import actors.GreeterMain.SayHello
+import greeteractors.GreeterMain
+import greeteractors.GreeterMain.SayHello
 import akka.actor.typed.ActorSystem
 
 object AkkaQuickstart extends App {
