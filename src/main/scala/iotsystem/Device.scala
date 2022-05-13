@@ -13,6 +13,8 @@ object Device {
 
   final case class RecordTemperature(requestId: Long, value: Double, replyTo: ActorRef[TemperatureRecorded]) extends Command
 
+  case object Passivate extends Command
+
   // message to acknowledge that the temp was processed
   final case class TemperatureRecorded(requestId: Long)
 
@@ -37,6 +39,9 @@ class Device(context: ActorContext[Device.Command], groupId: String, deviceId: S
         lastTemperatureReading = Some(value)
         replyTo ! TemperatureRecorded(id)
         this
+
+      case Passivate =>
+        Behaviors.stopped
     }
   }
 
