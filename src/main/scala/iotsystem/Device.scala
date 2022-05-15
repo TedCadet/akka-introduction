@@ -41,6 +41,7 @@ class Device(context: ActorContext[Device.Command], groupId: String, deviceId: S
         this
 
       case Passivate =>
+        context.log.info("device-{} stopped", deviceId)
         Behaviors.stopped
     }
   }
