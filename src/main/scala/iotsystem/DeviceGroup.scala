@@ -10,6 +10,8 @@ object DeviceGroup {
   // messages
   private final case class DeviceTerminated(device: ActorRef[Device.Command], groupId: String, deviceId: String) extends Command
 
+  case object Passivate extends Command
+
   def apply(groupId: String): Behavior[Command] = Behaviors.setup(context => new DeviceGroup(context, groupId))
 }
 
@@ -71,6 +73,10 @@ class DeviceGroup(context: ActorContext[DeviceGroup.Command], groupId: String)
         context.log.info(" device {} has been ternminated", dId)
         deviceIdToActor -= dId
         this
+
+      case Passivate =>
+        context.log.info("group-{} terminated", groupId)
+        Behaviors.stopped
     }
   }
 
