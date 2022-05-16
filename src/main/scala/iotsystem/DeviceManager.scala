@@ -34,7 +34,7 @@ object DeviceManager {
       with DeviceManager.Command
   //    with DeviceGroupQuery.Command
 
-  final case class RespondAllTemperatures(requestId: String, temperatures: Map[String, TemperatureReading])
+  final case class RespondAllTemperatures(requestId: Long, temperatures: Map[String, TemperatureReading])
 
   // TemperatureReading msgs
   sealed trait TemperatureReading
