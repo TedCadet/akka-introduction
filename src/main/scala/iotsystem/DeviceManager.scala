@@ -7,6 +7,7 @@ import iotsystem.Device.Command
 object DeviceManager {
   def apply(): Behavior[Command] = Behaviors.setup(context => new DeviceManager(context))
 
+  // Commands msgs
   sealed trait Command
 
   final case class RequestTrackDevice(groupId: String, deviceId: String, replyTo: ActorRef[DeviceRegistered])
@@ -26,7 +27,25 @@ object DeviceManager {
 
   private final case class DeviceGroupTerminated(groupId: String) extends DeviceManager.Command
 
-  //  private final case class GroupTermina
+  //  private final case class GroupTerminated(device: )
+
+  final case class RequestAllTemperatures(requestId: String, groupId: String, replyTo: ActorRef[RespondAllTemperatures])
+    extends DeviceGroup.Command
+      with DeviceManager.Command
+  //    with DeviceGroupQuery.Command
+
+  final case class RespondAllTemperatures(requestId: String, temperatures: Map[String, TemperatureReading])
+
+  // TemperatureReading msgs
+  sealed trait TemperatureReading
+
+  final case class Temperature(value: Double) extends TemperatureReading
+
+  case object TemperatureNotAvailable extends TemperatureReading
+
+  case object DeviceNotAvailable extends TemperatureReading
+
+  case object DeviceTimedOut extends TemperatureReading
 }
 
 class DeviceManager(context: ActorContext[DeviceManager.Command]) extends AbstractBehavior[DeviceManager.Command](context) {
