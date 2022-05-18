@@ -29,7 +29,7 @@ object DeviceManager {
 
   //  private final case class GroupTerminated(device: )
 
-  final case class RequestAllTemperatures(requestId: String, groupId: String, replyTo: ActorRef[RespondAllTemperatures])
+  final case class RequestAllTemperatures(requestId: Long, groupId: String, replyTo: ActorRef[RespondAllTemperatures])
     extends DeviceGroup.Command
       with DeviceManager.Command
   //    with DeviceGroupQuery.Command
