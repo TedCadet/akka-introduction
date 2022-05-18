@@ -3,7 +3,7 @@ package iotsystem
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import iotsystem.Device.{Passivate, RecordTemperature, TemperatureRecorded}
-import iotsystem.DeviceManager.{DeviceRegistered, ReplyDeviceList, RequestDeviceList, RequestTrackDevice}
+import iotsystem.DeviceManager.{DeviceRegistered, ReplyDeviceList, RequestAllTemperatures, RequestDeviceList, RequestTrackDevice, RespondAllTemperatures, Temperature, TemperatureNotAvailable}
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -90,5 +90,31 @@ class DeviceGroupSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       groupActor ! RequestDeviceList(groupId = groupId, requestId = 1, replyTo = listDeviceProbe.ref)
       listDeviceProbe.expectMessage(ReplyDeviceList(requestId = 1, ids = setIds))
     }
+  }
+
+  "be able to collect temperatures from all active devices" in {
+    val device1 = "device1"
+    val device2 = "device2"
+    val device3 = "device3"
+    val AllTempProbe = createTestProbe[RespondAllTemperatures]()
+
+    groupActor ! RequestTrackDevice(groupId = groupId, deviceId = device1, replyTo = registeredProbe.ref)
+    val deviceActor1 = registeredProbe.receiveMessage().device
+
+    groupActor ! RequestTrackDevice(groupId = groupId, deviceId = device2, replyTo = registeredProbe.ref)
+    val deviceActor2 = registeredProbe.receiveMessage().device
+
+    groupActor ! RequestTrackDevice(groupId = groupId, deviceId = device3, replyTo = registeredProbe.ref)
+    val deviceActor3 = registeredProbe.receiveMessage().device
+
+    deviceActor1 ! RecordTemperature(requestId = 0, value = 1, replyTo = recordProbe.ref)
+    deviceActor2 ! RecordTemperature(requestId = 1, value = 2, replyTo = recordProbe.ref)
+
+    groupActor ! RequestAllTemperatures(requestId = 0, groupId = groupId, replyTo = AllTempProbe.ref)
+
+    AllTempProbe.expectMessage(RespondAllTemperatures(requestId = 0,
+      temperatures = Map(device1 -> Temperature(1), device2 -> Temperature(2), device3 -> TemperatureNotAvailable)))
+
+
   }
 }
