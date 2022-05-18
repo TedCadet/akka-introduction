@@ -2,6 +2,9 @@ package iotsystem
 
 import akka.actor.typed.{ActorRef, Behavior, PostStop, Signal}
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors, LoggerOps}
+import iotsystem.DeviceManager.RequestAllTemperatures
+
+import scala.concurrent.duration.DurationInt
 
 object DeviceGroup {
 
@@ -23,7 +26,23 @@ class DeviceGroup(context: ActorContext[DeviceGroup.Command], groupId: String)
 
   context.log.info("DeviceGroup {} started", groupId)
 
+  private val timeout = 3.seconds
+
   private var deviceIdToActor = Map.empty[String, ActorRef[Device.Command]]
+
+  def onRequestAllTemperatures(requestId: Long,
+                               gId: String,
+                               replyTo: ActorRef[DeviceManager.RespondAllTemperatures]): Behavior[Command] = {
+    if (gId.equals(groupId)) {
+      context.spawnAnonymous(DeviceGroupQuery(deviceIdToActor,
+        requestId = requestId,
+        requester = replyTo,
+        timeout = timeout))
+      this
+    } else {
+      Behaviors.unhandled
+    }
+  }
 
   override def onMessage(msg: Command): Behavior[Command] = {
     msg match {
@@ -67,6 +86,8 @@ class DeviceGroup(context: ActorContext[DeviceGroup.Command], groupId: String)
       // cas ou le groupeId ne match pas celui de "cet" acteur
       case RequestDeviceList(_, gId, _) =>
         Behaviors.unhandled
+
+      case RequestAllTemperatures(requestId, groupId, replyTo) => onRequestAllTemperatures(requestId, groupId, replyTo)
 
       // cas ou un device est arrete
       case DeviceTerminated(_, _, dId) =>
