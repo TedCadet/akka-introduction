@@ -18,7 +18,37 @@ object Device {
   // message to acknowledge that the temp was processed
   final case class TemperatureRecorded(requestId: Long)
 
-  def apply(groupId: String, deviceId: String): Behavior[Command] = Behaviors.setup(context => new Device(context, groupId, deviceId))
+  //  def apply(groupId: String, deviceId: String): Behavior[Command] = Behaviors.setup(context => new Device(context, groupId, deviceId))
+
+  // It won't work. It needs to keep the groupId and deviceId, which is easier with OOP.
+  // Func prog is better to define immutable state Behaviors
+  /*def apply(groupId: String, deviceId: String): Behavior[Command] =
+    Behaviors.setup { context =>
+      context.log.info2("Device actor {}-{} started", groupId, deviceId)
+      var lastTemperatureReading: Option[Double] = None
+
+      Behaviors.receiveMessage[Device.Command] { message =>
+        message match {
+          case ReadTemperature(id, replyTo) =>
+            replyTo ! RespondTemperature(id, deviceId, lastTemperatureReading)
+            Behaviors.same
+
+          case RecordTemperature(id, value, replyTo) =>
+            context.log.info2("Recorded temperature reading {} with {}", value, id)
+            lastTemperatureReading = Some(value)
+            replyTo ! TemperatureRecorded(id)
+            Behaviors.same
+
+          case Passivate =>
+            context.log.info("device-{} stopped", deviceId)
+            Behaviors.stopped
+        }
+      }.receiveSignal {
+        case (context, PostStop) =>
+          context.log.info2("Device actor {}-{} stopped", groupId, deviceId)
+          Behaviors.same
+      }
+    }*/
 }
 
 class Device(context: ActorContext[Device.Command], groupId: String, deviceId: String) extends AbstractBehavior[Device.Command](context) {
